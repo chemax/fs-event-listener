@@ -4,7 +4,7 @@ You need it to work with any kind of FS events. Look at use examples at `test/ev
 
 ## Make a tests
 ```shell script
-git clone git@github.com:borikinternet/twin-inferno.git
-cd twin-inferno/test
+git clone git@github.com:borikinternet/fs-event-listener.git
+cd fs-event-listener/test
 go test event_listener_test.go
 ``` 

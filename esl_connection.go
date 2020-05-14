@@ -14,43 +14,54 @@ WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEM
 COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-package event_listener_test
+package fsEventListener
 
 import (
-	EL ".."
-	FS "./fakeFS"
-	"github.com/0x19/goesl"
-	"runtime"
-	"testing"
-	"time"
+	"fmt"
+	ESL "github.com/0x19/goesl"
+	"log"
 )
 
-func TestEventListener(t *testing.T) {
-	runtime.GOMAXPROCS(2)
-	eventTest := FS.NewEvent("TEST")
-	eventsList := make([]*FS.Event, 0)
-	eventsList = append(eventsList, eventTest)
-	fs, uuid, err := FS.NewServer("127.0.0.1:8021", "ClueCon", eventsList)
-	if err != nil {
-		// todo add error handling
-		t.Fail()
-		return
+type ESLConnection struct {
+	Connection *ESL.Client
+	ch         chan *ESL.Message
+	active     bool
+}
+
+func NewESLConnection(connection *ESL.Client, ch chan *ESL.Message) *ESLConnection {
+	res := &ESLConnection{
+		Connection: connection,
+		ch:         ch,
+		active:     false,
 	}
-	defer fs.Stop()
-	eventTest.SetHeader("Core-UUID", uuid)
-	eListener := EL.NewEventListener()
-	success := false
-	eListener.AddEventHandler("TEST", func(event *goesl.Message) {
-		if event.GetHeader("Event-Name") == "TEST" {
-			success = true
+	go res.run()
+	return res
+}
+
+func (ec *ESLConnection) SubscribeEvent(eventName string) error {
+	err := ec.Connection.Send(fmt.Sprintf("event json %s", eventName))
+	return err
+}
+
+func (ec ESLConnection) IsActive() bool {
+	return ec.active
+}
+
+func (ec *ESLConnection) run() {
+	ec.active = true
+	for {
+		msg, err := ec.Connection.ReadMessage()
+		if err != nil {
+			log.Printf("Got error reading ESL message: %v", err)
+			ec.active = false
+			break
 		}
-	})
-	if err := eListener.OpenESLConnection("127.0.0.1", "ClueCon", 8021, 1); err != nil {
-		t.Fail()
-		return
+		if msg == nil {
+			continue
+		}
+		ec.ch <- msg
 	}
-	time.Sleep(time.Millisecond * 10)
-	if !success {
-		t.Fail()
+	if err := ec.Connection.Close(); err != nil {
+		log.Printf("Got error closing ESL connection: %v", err)
 	}
 }
