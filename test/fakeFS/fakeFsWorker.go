@@ -171,15 +171,13 @@ func (fs *Worker) generateEvents() {
 	for !fs.stop {
 		select {
 		case extEvent := <-fs.eventsChan:
-			eventType, err := extEvent.GetHeader("Event-Subtype")
+			eventType, err := extEvent.GetHeader("Event-Subclass")
 			var list []string
 			if err == nil {
 				list = fs.customEvents
-				fs.evListsMutex.Lock()
 			} else {
 				list = fs.events
 				eventType, _ = extEvent.GetHeader("Event-Name")
-
 			}
 			fs.evListsMutex.Lock()
 			for i := range list {
@@ -217,8 +215,7 @@ func (fs *Worker) sendMessage(buf string) error {
 	if _, err := fs.conn.Write([]byte(s)); err != nil {
 		return err
 	}
-	_, err := fs.conn.Write([]byte(fmt.Sprintf("%s\n", buf)))
-	if err != nil {
+	if _, err := fs.conn.Write([]byte(fmt.Sprintf("%s\n", buf))); err != nil {
 		return err
 	}
 	return nil

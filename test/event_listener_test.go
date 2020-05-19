@@ -49,7 +49,37 @@ func TestEventListener(t *testing.T) {
 		t.Fail()
 		return
 	}
-	time.Sleep(time.Millisecond * 10)
+	time.Sleep(time.Millisecond * 100)
+	if !success {
+		t.Fail()
+	}
+}
+
+func TestCustomEventListener(t *testing.T) {
+	runtime.GOMAXPROCS(2)
+	eventTest := FS.NewEvent("CUSTOM test::test")
+	eventsList := make([]*FS.Event, 0)
+	eventsList = append(eventsList, eventTest)
+	fs, uuid, err := FS.NewServer("127.0.0.1:8021", "ClueCon", eventsList)
+	if err != nil {
+		// todo add error handling
+		t.Fail()
+		return
+	}
+	defer fs.Stop()
+	eventTest.SetHeader("Core-UUID", uuid)
+	eListener := EL.NewEventListener()
+	success := false
+	eListener.AddEventHandler("CUSTOM test::test", func(event *goesl.Message) {
+		if event.GetHeader("Event-Name") == "CUSTOM" && event.GetHeader("Event-Subclass") == "test::test" {
+			success = true
+		}
+	})
+	if err := eListener.OpenESLConnection("127.0.0.1", "ClueCon", 8021, 1); err != nil {
+		t.Fail()
+		return
+	}
+	time.Sleep(time.Millisecond * 100)
 	if !success {
 		t.Fail()
 	}

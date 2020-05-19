@@ -32,7 +32,7 @@ func NewEvent(eventName string) *Event {
 	baseHeader := make([]string, 0)
 	if strings.Index(eventName, "CUSTOM") > -1 {
 		baseHeader = append(baseHeader, "Event-Name: CUSTOM")
-		baseHeader = append(baseHeader, fmt.Sprintf("Event-Subtype: %s", strings.Fields(eventName)[1]))
+		baseHeader = append(baseHeader, fmt.Sprintf("Event-Subclass: %s", strings.Fields(eventName)[1]))
 	} else {
 		baseHeader = append(baseHeader, fmt.Sprintf("Event-Name: %s", eventName))
 	}
