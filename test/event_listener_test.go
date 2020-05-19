@@ -17,9 +17,9 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 package event_listener_test
 
 import (
-	EL ".."
-	FS "./fakeFS"
 	"github.com/0x19/goesl"
+	EL "github.com/borikinternet/fs-event-listener"
+	FS "github.com/borikinternet/fs-event-listener/test/fakeFS"
 	"runtime"
 	"testing"
 	"time"
