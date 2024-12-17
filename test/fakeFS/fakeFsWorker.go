@@ -38,7 +38,9 @@ const (
 	SerializePlain                    = 0
 	SerializeJson                     = 1
 	FSApiResponseHeader               = `Content-Length: %d
-Content-Type: api/response`
+Content-Type: api/response
+
+`
 	FSStatusReply = `UP %d years, %d days, %d hours, %d minutes, %d seconds, %d milliseconds, %d microseconds
 FreeSWITCH (Version 1.8.7 git 6047ebd 2019-07-02 20:06:09Z 64bit) is ready
 0 session(s) since startup
@@ -46,7 +48,9 @@ FreeSWITCH (Version 1.8.7 git 6047ebd 2019-07-02 20:06:09Z 64bit) is ready
 0 session(s) per Sec out of max 30, peak 0, last 5min 0
 1000 session(s) max
 min idle cpu 0.00/99.73
-Current Stack Size/Max 240K/8192K\n\n`
+Current Stack Size/Max 240K/8192K
+
+`
 )
 
 type Worker struct {
