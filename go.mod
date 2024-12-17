@@ -1,4 +1,4 @@
-module github.com/borikinternet/fs-event-listener
+module github.com/chemax/fs-event-listener
 
 go 1.14
 
