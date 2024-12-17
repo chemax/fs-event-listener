@@ -170,10 +170,15 @@ func (fs *Worker) processCommand(s string) {
 				fs.customEvents = append(fs.customEvents, events[i])
 			}
 		}
-	case "status":
-		Y, M, D, H, m, sec := diff(time.Now(), fs.startTime)
-		status := fmt.Sprintf(FSStatusReply, Y, M, D, H, m, sec, 0)
-		if _, err := fs.conn.Write([]byte(status)); err != nil {
+	case "api", "bgapi":
+		var reply string
+		if args[0] == "status" {
+			Y, M, D, H, m, sec := diff(time.Now(), fs.startTime)
+			reply = fmt.Sprintf(FSStatusReply, Y, M, D, H, m, sec, 0)
+		} else {
+			reply = FsErrCommandNotFound
+		}
+		if _, err := fs.conn.Write([]byte(reply)); err != nil {
 			fs.stop = true
 		}
 	default:
