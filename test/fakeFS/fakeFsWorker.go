@@ -37,14 +37,16 @@ const (
 	BufLen                            = 4096
 	SerializePlain                    = 0
 	SerializeJson                     = 1
-	FSStatusReply                     = `UP %d years, %d days, %d hours, %d minutes, %d seconds, %d milliseconds, %d microseconds
+	FSApiResponseHeader               = `Content-Length: %d
+Content-Type: api/response`
+	FSStatusReply = `UP %d years, %d days, %d hours, %d minutes, %d seconds, %d milliseconds, %d microseconds
 FreeSWITCH (Version 1.8.7 git 6047ebd 2019-07-02 20:06:09Z 64bit) is ready
 0 session(s) since startup
 0 session(s) - peak 0, last 5min 0
 0 session(s) per Sec out of max 30, peak 0, last 5min 0
 1000 session(s) max
 min idle cpu 0.00/99.73
-Current Stack Size/Max 240K/8192K`
+Current Stack Size/Max 240K/8192K\n\n`
 )
 
 type Worker struct {
@@ -175,11 +177,19 @@ func (fs *Worker) processCommand(s string) {
 		if args[0] == "status" {
 			Y, M, D, H, m, sec := diff(time.Now(), fs.startTime)
 			reply = fmt.Sprintf(FSStatusReply, Y, M, D, H, m, sec, 0)
+			s := fmt.Sprintf(FSApiResponseHeader, len(reply)+1)
+			if _, err := fs.conn.Write([]byte(s)); err != nil {
+				fs.stop = true
+				return
+			}
+			if _, err := fs.conn.Write([]byte(fmt.Sprintf("%s\n", reply))); err != nil {
+				fs.stop = true
+				return
+			}
 		} else {
-			reply = FsErrCommandNotFound
-		}
-		if _, err := fs.conn.Write([]byte(reply)); err != nil {
-			fs.stop = true
+			if _, err := fs.conn.Write([]byte(FsErrCommandNotFound)); err != nil {
+				fs.stop = true
+			}
 		}
 	default:
 		if _, err := fs.conn.Write([]byte(FsErrCommandNotFound)); err != nil {
